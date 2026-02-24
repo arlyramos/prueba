@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultados - Hospital Amra</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+    body{
+      min-height:100vh; display:flex; justify-content:center; align-items:center;
+      background:#f4f6fb; padding:24px;
+    }
+    .card{
+      width:min(900px, 100%);
+      background:#fff; border-radius:16px; padding:22px;
+      box-shadow:0 15px 35px rgba(0,0,0,0.10);
+    }
+    .top{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    h1{color:#162742;font-size:22px}
+    .btn{
+      border:none; border-radius:10px; padding:10px 12px; cursor:pointer; font-weight:700;
+      background:#162742; color:#fff;
+    }
+    .btn.secondary{background:#eef2ff;color:#162742}
+    .grid{
+      display:grid; grid-template-columns: 1fr 0.9fr; gap:16px; margin-top:10px;
+    }
+    @media(max-width:900px){ .grid{grid-template-columns:1fr} }
+    .box{border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fafafa}
+    .big{
+      font-size:26px; font-weight:800; color:#162742; margin-top:8px;
+    }
+    ul{margin:10px 0 0 18px}
+    li{margin:6px 0}
+    .preview{
+      width:100%; border-radius:14px; border:1px solid #e5e7eb;
+    }
+    .muted{color:#6b7280;font-size:13px;margin-top:10px}
+    .warn{
+      margin-top:14px; font-size:12px; color:#6b7280;
+      padding:10px; border-radius:12px; background:#f0f4ff;
+      border:1px solid #dbeafe;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="top">
+      <h1>Resultados del análisis</h1>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn secondary" onclick="goBack()">Nuevo análisis</button>
+        <button class="btn" onclick="logout()">Salir</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="box">
+        <div class="muted">Diagnóstico estimado</div>
+        <div id="diagnosis" class="big">—</div>
+
+        <div style="margin-top:14px; font-weight:700; color:#162742;">Recomendaciones</div>
+        <ul id="recs"></ul>
+
+        <div class="warn">
+          * Proyecto académico. Esto es informativo y no sustituye diagnóstico médico profesional.
+        </div>
+      </div>
+
+      <div class="box">
+        <div style="font-weight:700; color:#162742; margin-bottom:10px;">Imagen analizada</div>
+        <img id="img" class="preview" alt="Imagen analizada">
+        <div class="muted" id="imgNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🔒 Protección: si no hay login, a login
+    if (localStorage.getItem("loggedIn") !== "true") {
+      window.location.href = "login.html";
+    }
+
+    // Recomendaciones por clase (tus 5 clases)
+    const RECOMMENDATIONS = {
+      "covid": [
+        "Realizar prueba confirmatoria.",
+        "Monitorear saturación de oxígeno.",
+        "Si hay dificultad respiratoria o empeora, acudir a urgencias."
+      ],
+      "normal": [
+        "Resultado compatible con normalidad.",
+        "Si hay síntomas persistentes, consultar a un médico."
+      ],
+      "neumonia": [
+        "Se recomienda valoración médica.",
+        "Evitar automedicación.",
+        "Puede requerir estudios complementarios."
+      ],
+      "neumotorax": [
+        "Acudir inmediatamente a valoración médica.",
+        "Si hay dolor torácico fuerte o falta de aire, urgencias."
+      ],
+      "tuberculosis": [
+        "Requiere pruebas confirmatorias y valoración médica.",
+        "Evitar contacto cercano hasta descartar diagnóstico."
+      ]
+    };
+
+    // Leer lo que guardó modelo.html
+    let label = (localStorage.getItem("lastDiagnosis") || "").toLowerCase().trim();
+
+// normalizar nombres raros del modelo
+if(label === "xneumotorax") label = "neumotorax";
+
+    const imgData = localStorage.getItem("lastImageData") || "";
+
+    // Mostrar diagnóstico
+    const diagnosisEl = document.getElementById("diagnosis");
+    diagnosisEl.textContent = label ? label.toUpperCase() : "SIN RESULTADO";
+
+    // Mostrar recomendaciones
+    const recsEl = document.getElementById("recs");
+    recsEl.innerHTML = "";
+
+    const recs = RECOMMENDATIONS[label] || ["Consultar a un profesional de la salud."];
+    recs.forEach(r => {
+      const li = document.createElement("li");
+      li.textContent = r;
+      recsEl.appendChild(li);
+    });
+
+    // Mostrar imagen (si la guardaste)
+    const imgEl = document.getElementById("img");
+    const imgNote = document.getElementById("imgNote");
+
+    if (imgData) {
+      imgEl.src = imgData;
+      imgNote.textContent = "";
+    } else {
+      imgEl.style.display = "none";
+      imgNote.textContent = "No se recibió imagen desde la página anterior.";
+    }
+
+    function goBack(){
+      window.location.href = "modelo.html";
+    }
+
+    function logout(){
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
